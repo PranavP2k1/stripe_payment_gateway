@@ -12,7 +12,9 @@ app.use(
 
 const stripe = require("stripe")(process.env.STRIPE_PRIVATE_KEY) /*
 To get the stripe private key,create a stripe account,select test mode and access the
-private key for the test mode.
+private key for the test mode.Enable the test mode(If we are testing our payment gateway),then go to developers 
+section and in the developers section got to the API keys page and take the secret key.The secret key is 
+our STRIPE_PRIVATE_KEY.Never commit the STRIPE_PRIVATE_KEY to github.
 */
 
 
@@ -40,11 +42,13 @@ app.post("/create-checkout-session", async (req, res) => {
       The "payment_method_types" key decides the type of payments.
       It can be cards ,bank transfers ,wallets etc.
       */
+      
       mode: "payment",
       /*
       "mode" decides the mode of payment like one-time payment,
       subscriptions etc.
       */
+      
       line_items: req.body.items.map(item => {
         const storeItem = storeItems.get(item.id)
         return {
@@ -54,10 +58,23 @@ app.post("/create-checkout-session", async (req, res) => {
               name: storeItem.name,
             },
             unit_amount: storeItem.priceInCents,
+            /*
+            The "unit_amount" is the price of the particulat product.Be careful
+            while mentioning the price.Here it takes the price in cents.Check out the unit_amount 
+            value in case of "inr".
+            */
           },
           quantity: item.quantity,
         }
       }),
+      /*
+      The "line_items" is the array of items that we want to purchase.
+      This needs to include the name,prices of the items.here the line_items
+      key is taking in "req.body.items" as the value.The "req.body.items" is an
+      array of item ids and their quantities that we send from the client side.
+      What the req.body.items.map() function does is that it takes ecah item in the
+      array and then converts each item into a form expected by the stripe servers.
+      */
       
       success_url: `${process.env.CLIENT_URL}/success.html`,
       cancel_url: `${process.env.CLIENT_URL}/cancel.html`,
