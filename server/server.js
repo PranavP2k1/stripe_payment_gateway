@@ -26,9 +26,25 @@ and not on client side.
 
 app.post("/create-checkout-session", async (req, res) => {
   try {
-    const session = await stripe.checkout.sessions.create({
+    const session = await stripe.checkout.sessions.create({ 
+      
+      /*
+      The stripe.checkout.sessions.create() function takes in an object
+      that contain details like item price,item name,payment methods etc.
+      and then returns a session object that represents the checkout session of the 
+      given item.The item checkout page URL can be found in the session.url object.
+      */
+      
       payment_method_types: ["card"],
+      /*
+      The "payment_method_types" key decides the type of payments.
+      It can be cards ,bank transfers ,wallets etc.
+      */
       mode: "payment",
+      /*
+      "mode" decides the mode of payment like one-time payment,
+      subscriptions etc.
+      */
       line_items: req.body.items.map(item => {
         const storeItem = storeItems.get(item.id)
         return {
@@ -42,8 +58,15 @@ app.post("/create-checkout-session", async (req, res) => {
           quantity: item.quantity,
         }
       }),
+      
       success_url: `${process.env.CLIENT_URL}/success.html`,
       cancel_url: `${process.env.CLIENT_URL}/cancel.html`,
+      /*
+      The success_url and cancel_url decides where the client would be 
+      navigated to after the checkout is successfull or after the 
+      checkout has cancelled.
+      */
+      
     })
     res.json({ url: session.url })
   } catch (e) {
